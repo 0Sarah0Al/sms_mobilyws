@@ -1,0 +1,115 @@
+<?php
+
+/**
+ * @file
+ * Adds support for sending SMS messages using the Mobily.ws gateway.
+ */
+
+/**
+ * Implementation of hook_gateway_info().
+ */
+function sms_mobilyws_gateway_info() {
+  return array(
+    'mobilyws' => array(
+      'name' => 'Mobily.ws',
+      'configure form' => 'sms_mobilyws_admin_form',
+    ),
+  );
+}
+
+/**
+ * Configuration form for gateway module.
+ */
+function sms_mobilyws_admin_form($configuration) {
+
+  $form['sms_mobilyws_status'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Mobily.ws Serivce Status'),
+    '#default_value' => _get_sms_status(),
+    '#description' => t('The current Serivce Status of the Mobily.ws availability.'),
+    '#size' => 30,
+    '#disabled' => TRUE,
+    '#maxlength' => 64,
+    '#required' => FALSE,
+  );
+
+  $form['sms_mobilyws_balance'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Your Balance'),
+    '#default_value' => sms_mobilyws_balance($configuration['sms_mobilyws_user'], $configuration['sms_mobilyws_password']),
+    '#description' => t('The current Balance on your Mobily.ws gateway account.'),
+    '#size' => 30,
+    '#disabled' => TRUE,
+    '#maxlength' => 64,
+    '#required' => FALSE,
+  );
+
+  $form['sms_mobilyws_user'] = array(
+    '#type' => 'textfield',
+    '#title' => t('User'),
+    '#description' => t('The username of your Mobily.ws gateway account.'),
+    '#size' => 40,
+    '#maxlength' => 255,
+    '#default_value' => $configuration['sms_mobilyws_user'] ?: '',
+  );
+
+  $form['sms_mobilyws_password'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Password'),
+    '#description' => t('The current password on your Mobily.ws gateway account.'),
+    '#size' => 30,
+    '#maxlength' => 64,
+    '#default_value' => $configuration['sms_mobilyws_password'] ?: '',
+  );
+
+  return $form;
+}
+
+
+/**
+ * Get the balance of your account.
+ */
+function sms_mobilyws_balance($user_account = '966550005521', $pass_account = 'A0552951662') {
+
+  $url = "http://www.mobily.ws/api/balance.php";
+  $string_to_post = "mobile=" . $user_account . "&password=" . $pass_account;
+  $ch = curl_init();
+  curl_setopt($ch, CURLOPT_URL, $url);
+  curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+  curl_setopt($ch, CURLOPT_HEADER, 0);
+  curl_setopt($ch, CURLOPT_TIMEOUT, 5);
+  curl_setopt($ch, CURLOPT_POST, 1);
+  curl_setopt($ch, CURLOPT_POSTFIELDS, $string_to_post);
+  $result = curl_exec($ch);
+
+  return $result;
+}
+
+/**
+ * Get the Availablity of your account.
+ */
+function _get_sms_status() {
+
+  global $send_status;
+  $context_options['http'] = array(
+    'method' => 'GET',
+    'max_redirects' => 0,
+    'protocol_version' => 1.0,
+    'timeout' => 10,
+    'ignore_errors' => TRUE,
+  );
+
+  $context_resouce  = stream_context_create($context_options);
+  $url = "http://www.mobily.ws/api/sendStatus.php";
+  $array_result = file($url, FILE_IGNORE_NEW_LINES, $context_resouce);
+  $result = $array_result[0];
+
+  // if($viewResult)
+  $result = trim(($result), $send_status);
+  if ($result == 1) {
+    return t('Available');
+  }
+  else {
+    return t('Unavailable');
+  }
+}
