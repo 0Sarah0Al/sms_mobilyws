@@ -39,13 +39,14 @@ function sms_mobilyws_admin_form($configuration) {
     '#required' => FALSE,
   );
 
+  $sms_balance = sms_mobilyws_balance();
   $form['sms_mobilyws_balance'] = array(
     '#type' => 'textfield',
     '#title' => t('Your Balance'),
-    '#default_value' => sms_mobilyws_balance(),
+    '#default_value' => $sms_balance['balance'],
     '#description' => t('The current balance of your !Mobily.ws gateway account.', array(
       '!Mobily.ws' => '<a target="_blank" href="http://mobily.ws">Mobily.ws</a>',
-    )),
+    )) . ' <br /><strong>' . $sms_balance['message'] . '</strong>',
     '#size' => 30,
     '#disabled' => TRUE,
     '#maxlength' => 64,
@@ -142,7 +143,33 @@ function sms_mobilyws_balance() {
   curl_setopt($ch, CURLOPT_POSTFIELDS, $string_to_post);
   $result = curl_exec($ch);
 
-  return $result;
+  $arrayBalance = array();
+  $arrayBalance[0] = t('Can not connect to Mobily.ws server.');
+  $arrayBalance[1] = t('Mobile number (username) is not correct.');
+  $arrayBalance[2] = t('Password is not correct.');
+
+  $responsArray = array();
+
+  if( isset($arrayBalance[$result]) ){
+    $responsArray['status'] = '0'; // Error response.
+    $responsArray['message'] = $arrayBalance[$result];
+    return $responsArray;
+  }
+
+  // Check result.
+  if (strstr($result, '/')) {
+    $balance = explode('/', $result);
+    // Correct result.
+    $responsArray['status'] = '1'; // Successful.
+    $responsArray['total'] = $balance[0];
+    $responsArray['balance'] = $balance[1];
+    $responsArray['message'] = t('Your current balance is @balance points from @total_balance points.', array('@balance'=>$balance[1], '@total_balance'=>$balance[0]));
+    return $responsArray;
+  }
+
+  $responsArray['status'] = '2'; // Response structure is not correct.
+  $responsArray['message'] = t('Response structure is not correct. Please contact support team.');
+  return $responsArray;
 }
 
 /**
