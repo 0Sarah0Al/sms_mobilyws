@@ -1,0 +1,19 @@
+# Arabic translation of Mobily.ws SMS Framework (1.1)
+#
+
+msgid "Can not connect to Mobily.ws server."
+msgstr "لم يتم الاتصال بالخادم."
+msgid "Mobile number (username) is not correct."
+msgstr "رقم الجوال (إسم المستخدم) غير صحيح."
+msgid "Password is not correct."
+msgstr "كلمة المرور غير صحيحه."
+msgid "Your current balance is @balance points from @total_balance points."
+msgstr "رصيدك الحالي هو @balance نقطه من اصل @total_balance نقطة."
+msgid "Response structure is not correct. Please contact support team."
+msgstr "النتيجة العائدة غير صحيحة. الرجاء الاتصال بالدعم الفني."
+
+msgid ""
+msgstr ""
+
+msgid ""
+msgstr ""
