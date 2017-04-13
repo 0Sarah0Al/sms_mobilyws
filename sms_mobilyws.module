@@ -124,6 +124,11 @@ function sms_mobilyws_send($number, $message, $options) {
 function sms_mobilyws_balance() {
 
   $gateway = sms_gateways('gateway', 'mobilyws');
+
+  // Check if gateway configuration is already defined or not.
+  if(!isset($gateway['configuration']) || !isset($gateway['configuration']['sms_mobilyws_user']) || !isset($gateway['configuration']['sms_mobilyws_password']) )
+    return FALSE;
+
   $config = $gateway['configuration'];
 
   $url = "http://www.mobily.ws/api/balance.php";
