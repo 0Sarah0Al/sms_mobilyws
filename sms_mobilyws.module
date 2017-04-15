@@ -62,7 +62,7 @@ function sms_mobilyws_admin_form($configuration) {
     )),
     '#size' => 40,
     '#maxlength' => 255,
-    '#default_value' => $configuration['sms_mobilyws_sender'] ?: '',
+    '#default_value' => (isset($configuration) && isset($configuration['sms_mobilyws_sender'])) ? $configuration['sms_mobilyws_sender'] : '',
   );
 
   $form['sms_mobilyws_user'] = array(
@@ -73,7 +73,7 @@ function sms_mobilyws_admin_form($configuration) {
     )),
     '#size' => 40,
     '#maxlength' => 255,
-    '#default_value' => $configuration['sms_mobilyws_user'] ?: '',
+    '#default_value' => (isset($configuration) && isset($configuration['sms_mobilyws_user'])) ? $configuration['sms_mobilyws_user'] : '',
   );
 
   $form['sms_mobilyws_password'] = array(
@@ -84,7 +84,7 @@ function sms_mobilyws_admin_form($configuration) {
     )),
     '#size' => 30,
     '#maxlength' => 64,
-    '#default_value' => $configuration['sms_mobilyws_password'] ?: '',
+    '#default_value' => (isset($configuration) && isset($configuration['sms_mobilyws_password'])) ? $configuration['sms_mobilyws_password'] : '',
   );
 
   return $form;
