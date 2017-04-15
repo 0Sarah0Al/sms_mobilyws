@@ -128,8 +128,13 @@ function sms_mobilyws_balance() {
   $gateway = sms_gateways('gateway', 'mobilyws');
 
   // Check if gateway configuration is already defined or not.
-  if(!isset($gateway['configuration']) || !isset($gateway['configuration']['sms_mobilyws_user']) || !isset($gateway['configuration']['sms_mobilyws_password']) )
-    return FALSE;
+  if(!isset($gateway['configuration']) || !isset($gateway['configuration']['sms_mobilyws_user']) || !isset($gateway['configuration']['sms_mobilyws_password']) ){
+    $responsArray['status'] = '3'; // There is no configuration yet.
+    $responsArray['total'] = '0';
+    $responsArray['balance'] = '0';
+    $responsArray['message'] = t('Please save your @provider configurations so you can see your balance.', array('@provider'=>t('Mobily.ws')));
+    return $responsArray;
+  }
 
   $config = $gateway['configuration'];
 
@@ -153,6 +158,8 @@ function sms_mobilyws_balance() {
 
   if( isset($arrayBalance[$result]) ){
     $responsArray['status'] = '0'; // Error response.
+    $responsArray['total'] = '0';
+    $responsArray['balance'] = '0';
     $responsArray['message'] = $arrayBalance[$result];
     return $responsArray;
   }
@@ -169,6 +176,8 @@ function sms_mobilyws_balance() {
   }
 
   $responsArray['status'] = '2'; // Response structure is not correct.
+  $responsArray['total'] = '0';
+  $responsArray['balance'] = '0';
   $responsArray['message'] = t('Response structure is not correct. Please contact support team.');
   return $responsArray;
 }
