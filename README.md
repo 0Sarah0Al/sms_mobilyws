@@ -9,7 +9,7 @@ CONTENTS OF THIS FILE
 
 -- SUMMARY --
 
-This module provides integration between Mobily.ws and SMS Framework.
+This module provides integration between SMSgw.net and SMS Framework.
 
 -- REQUIREMENTS --
 
@@ -27,7 +27,7 @@ for further information.
 
  - Just enable the module, A getway option will be availabe in
  SMS Framework (Gateway configuration).
- - Put your Mobily username and password in the options you see.
+ - Put your SMSgw username and password in the options you see.
 
 -- Maintainers --
 Current maintainers:

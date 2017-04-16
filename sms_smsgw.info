@@ -1,0 +1,5 @@
+name = "SMSgw.net"
+description = "Allows the SMS Framework to use SMSgw.net as a gateway."
+package = SMS Framework
+dependencies[] = sms
+core = 7.x
