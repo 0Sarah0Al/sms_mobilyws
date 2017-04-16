@@ -128,12 +128,13 @@ function sms_mobilyws_balance() {
   $gateway = sms_gateways('gateway', 'mobilyws');
 
   // Check if gateway configuration is already defined or not.
-  if(!isset($gateway['configuration']) || !isset($gateway['configuration']['sms_mobilyws_user']) || !isset($gateway['configuration']['sms_mobilyws_password']) ){
-    $responsArray['status'] = '3'; // There is no configuration yet.
-    $responsArray['total'] = '0';
-    $responsArray['balance'] = '0';
-    $responsArray['message'] = t('Please save your @provider configurations so you can see your balance.', array('@provider'=>t('Mobily.ws')));
-    return $responsArray;
+  if (!isset($gateway['configuration']) || !isset($gateway['configuration']['sms_mobilyws_user']) || !isset($gateway['configuration']['sms_mobilyws_password'])) {
+    // There is no configuration yet.
+    $respons_array['status'] = '3';
+    $respons_array['total'] = '0';
+    $respons_array['balance'] = '0';
+    $respons_array['message'] = t('Please save your @provider configurations so you can see your balance.', array('@provider' => t('Mobily.ws')));
+    return $respons_array;
   }
 
   $config = $gateway['configuration'];
@@ -149,37 +150,40 @@ function sms_mobilyws_balance() {
   curl_setopt($ch, CURLOPT_POSTFIELDS, $string_to_post);
   $result = curl_exec($ch);
 
-  $arrayBalance = array();
-  $arrayBalance[0] = t('Can not connect to Mobily.ws server.');
-  $arrayBalance[1] = t('Mobile number (username) is not correct.');
-  $arrayBalance[2] = t('Password is not correct.');
+  $array_balance = array();
+  $array_balance[0] = t('Can not connect to Mobily.ws server.');
+  $array_balance[1] = t('Mobile number (username) is not correct.');
+  $array_balance[2] = t('Password is not correct.');
 
-  $responsArray = array();
+  $respons_array = array();
 
-  if( isset($arrayBalance[$result]) ){
-    $responsArray['status'] = '0'; // Error response.
-    $responsArray['total'] = '0';
-    $responsArray['balance'] = '0';
-    $responsArray['message'] = $arrayBalance[$result];
-    return $responsArray;
+  if (isset($array_balance[$result])) {
+    // Error response.
+    $respons_array['status'] = '0';
+    $respons_array['total'] = '0';
+    $respons_array['balance'] = '0';
+    $respons_array['message'] = $array_balance[$result];
+    return $respons_array;
   }
 
   // Check result.
   if (strstr($result, '/')) {
     $balance = explode('/', $result);
     // Correct result.
-    $responsArray['status'] = '1'; // Successful.
-    $responsArray['total'] = $balance[0];
-    $responsArray['balance'] = $balance[1];
-    $responsArray['message'] = t('Your current balance is @balance points from @total_balance points.', array('@balance'=>$balance[1], '@total_balance'=>$balance[0]));
-    return $responsArray;
+    // Successful.
+    $respons_array['status'] = '1';
+    $respons_array['total'] = $balance[0];
+    $respons_array['balance'] = $balance[1];
+    $respons_array['message'] = t('Your current balance is @balance points from @total_balance points.', array('@balance' => $balance[1], '@total_balance' => $balance[0]));
+    return $respons_array;
   }
 
-  $responsArray['status'] = '2'; // Response structure is not correct.
-  $responsArray['total'] = '0';
-  $responsArray['balance'] = '0';
-  $responsArray['message'] = t('Response structure is not correct. Please contact support team.');
-  return $responsArray;
+  // Response structure is not correct.
+  $respons_array['status'] = '2';
+  $respons_array['total'] = '0';
+  $respons_array['balance'] = '0';
+  $respons_array['message'] = t('Response structure is not correct. Please contact support team.');
+  return $respons_array;
 }
 
 /**
@@ -187,7 +191,6 @@ function sms_mobilyws_balance() {
  */
 function _get_sms_status() {
 
-  global $send_status;
   $context_options['http'] = array(
     'method' => 'GET',
     'max_redirects' => 0,
@@ -200,23 +203,23 @@ function _get_sms_status() {
   $url = "http://www.mobily.ws/api/sendStatus.php";
   $result = file($url, FILE_IGNORE_NEW_LINES, $context_resouce);
 
-  $arraySendStatus = array();
-  $arraySendStatus[0] = t('Unavailable');
-  $arraySendStatus[1] = t('Available');
+  $array_send_status = array();
+  $array_send_status[0] = t('Unavailable');
+  $array_send_status[1] = t('Available');
 
-  $responsArray = array();
+  $respons_array = array();
 
   // Mobile.ws always returned array.
-  if( is_array($result) ){
+  if (is_array($result)) {
 
     // Always the first element in this array is the status code.
-    if( isset($result[0]) && is_numeric($result[0]) ){
+    if (isset($result[0]) && is_numeric($result[0])) {
 
-      if( isset($arraySendStatus[$result[0]]) ){
+      if (isset($array_send_status[$result[0]])) {
         // Result is correct.
-        $responsArray['status'] = $result[0];
-        $responsArray['message'] = $arraySendStatus[$result[0]];
-        return $responsArray;
+        $respons_array['status'] = $result[0];
+        $respons_array['message'] = $array_send_status[$result[0]];
+        return $respons_array;
       }
 
     }
@@ -224,9 +227,10 @@ function _get_sms_status() {
   }
 
   // If the result is not valid we will return the error status.
-  $responsArray['status'] = 2; // Response structure is not correct.
-  $responsArray['message'] = t('An error occurred.');
-  return $responsArray;
+  // Response structure is not correct.
+  $respons_array['status'] = 2;
+  $respons_array['message'] = t('An error occurred.');
+  return $respons_array;
 }
 
 /**
