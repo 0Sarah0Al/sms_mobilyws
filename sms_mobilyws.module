@@ -123,6 +123,7 @@ function sms_mobilyws_send($number, $message, $options) {
   $sendr = $config['sms_mobilyws_sender'];
   $sender = urlencode($sendr);
 
+  // @TODO: make sure this variable is defined $options['country'] before call it here.
   $string_to_post = "mobile=" . $config['sms_mobilyws_user'] . "&password=" . $config['sms_mobilyws_password'] . "&numbers=" . $options['country'] . $number . "&sender=" . $sender . "&msg=" . $msg . "&applicationType=" . $application_type;
 
   $ch = curl_init();
