@@ -99,7 +99,7 @@ function sms_mobilyws_send($number, $message, $options) {
   $config = $gateway['configuration'];
 
   $url = "www.mobily.ws/api/msgSend.php";
-  $application_type = "24";
+  $application_type = "24"; // Constant variable.
   $msg = convertToUnicode($message);
   $sendr = $config['sms_mobilyws_sender'];
   $sender = urlencode($sendr);
@@ -150,6 +150,7 @@ function sms_mobilyws_balance() {
   curl_setopt($ch, CURLOPT_POSTFIELDS, $string_to_post);
   $result = curl_exec($ch);
 
+  // Defined messages by keys as documentation.
   $array_balance = array();
   $array_balance[0] = t('Can not connect to Mobily.ws server.');
   $array_balance[1] = t('Mobile number (username) is not correct.');
