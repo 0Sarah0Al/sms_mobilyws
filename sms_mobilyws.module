@@ -117,7 +117,7 @@ function sms_mobilyws_send($number, $message, $options) {
   $gateway = sms_gateways('gateway', 'mobilyws');
   $config = $gateway['configuration'];
 
-  $url = "www.mobily.ws/api/msgSend.php";
+  $url = "http://www.mobily.ws/api/msgSend.php";
   $application_type = "24"; // Constant variable.
   $msg = convertToUnicode($message);
   $sendr = $config['sms_mobilyws_sender'];
