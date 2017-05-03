@@ -135,6 +135,62 @@ function sms_mobilyws_send($number, $message, $options) {
 
   $result = curl_exec($ch);
 
+  // Defined messages by keys as documentation.
+  $response_codes = array();
+  $response_codes[1] = t('Sent successfully.');
+  $response_codes[2] = t('Your balance is 0.');
+  $response_codes[3] = t('You do not have an sufficient balance.');
+  $response_codes[4] = t('Incorrect username (mobile number).');
+  $response_codes[5] = t('Incorrect password.');
+  $response_codes[6] = t('No response from gateway. Please try again.');
+  $response_codes[13] = t('Sender name is not acceptable.');
+  $response_codes[14] = t('Sender name is not defined.');
+  $response_codes[15] = t('Mobile number field is not correct or empty.');
+  $response_codes[16] = t('Sender name is empty.');
+  $response_codes[17] = t('Message text is not encrypted correctly.');
+  $response_codes[18] = t('Sending has been suspended from provider.');
+  $response_codes[19] = t('applicationType parameter is required.');
+
+  if (!isset($response_codes[$result]) || !is_numeric($response_codes[$result])) {
+    // Response structure is not correct or has been changed.
+    $response_array = array(
+      'status' => FALSE,
+      'message' => t('An error occurred during the HTTP request.'),
+      'data' => array('response'=>$result),
+    );
+    return $response_array;
+  }
+
+  // Check statuses.
+  switch ($result) {
+    case '1':
+      // As per Mobily.ws documentation 1 = Success.
+      $response_array = array(
+        'status' => TRUE,
+        'message' => $response_codes[$result],
+        'data' => array(),
+      );
+      break;
+
+    default:
+      // Check if status code has defined message in $response_codes messages.
+      if (isset($response_codes[$result])) {
+        $response_array = array(
+          'status' => FALSE,
+          'message' => $response_codes[$result],
+          'data' => array(),
+        );
+      }else{
+        // Response code is not implemented.
+        $response_array = array(
+          'status' => FALSE,
+          'message' => t('Status code in response is not implemented.'),
+          'data' => array(),
+        );
+      }
+      break;
+  }
+
   return $result;
 }
 
