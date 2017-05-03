@@ -12,8 +12,8 @@ msgstr "رصيدك الحالي هو @balance نقطه من اصل @total_balanc
 msgid "Response structure is not correct. Please contact support team."
 msgstr "النتيجة العائدة غير صحيحة. الرجاء الاتصال بالدعم الفني."
 
-msgid ""
-msgstr ""
+msgid "Leave blank to use the same saved password."
+msgstr "اتركه فارغاً لاستخدام نفس كلمة المرور المحفوظة مسبقاً."
 
 msgid ""
 msgstr ""

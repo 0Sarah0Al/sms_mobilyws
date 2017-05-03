@@ -76,12 +76,17 @@ function sms_mobilyws_admin_form($configuration) {
     '#default_value' => (isset($configuration) && isset($configuration['sms_mobilyws_user'])) ? $configuration['sms_mobilyws_user'] : '',
   );
 
+  // Show note if there is already saved password.
+  $leave_blank_note = '';
+  if (isset($configuration['sms_mobilyws_password']) && (strlen($configuration['sms_mobilyws_password']) > 0)) {
+    $leave_blank_note = t('Leave blank to use the same saved password.');
+  }
   $form['sms_mobilyws_password'] = array(
     '#type' => 'password',
     '#title' => t('Password'),
     '#description' => t('The password of your !Mobily.ws gateway account.', array(
       '!Mobily.ws' => '<a target="_blank" href="http://mobily.ws">Mobily.ws</a>',
-    )),
+    )).'<br /><strong>'.$leave_blank_note.'</strong>',
     '#size' => 30,
     '#maxlength' => 64,
     '#default_value' => '',
