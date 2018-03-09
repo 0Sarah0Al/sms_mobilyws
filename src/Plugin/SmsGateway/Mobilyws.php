@@ -4,6 +4,8 @@ namespace Drupal\sms_mobilyws\Plugin\SmsGateway;
 
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use GuzzleHttp\ClientInterface;
+use GuzzleHttp\Exception\RequestException;
 use Drupal\sms\Message\SmsDeliveryReport;
 use Drupal\sms\Message\SmsMessageResultStatus;
 use Drupal\sms\Message\SmsMessageReportStatus;
@@ -18,33 +20,45 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
  *   id = "mobilyws",
  *   label = @Translation("Mobilyws"),
  *   outgoing_message_max_recipients = 5000,
- *   reports_push = TRUE,
  *   credit_balance_available = TRUE
  * )
  */
 class Mobilyws extends SmsGatewayPluginBase implements ContainerFactoryPluginInterface {
 
   /**
-   * Creates an instance of the plugin.
+   * The HTTP client.
    *
-   * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
-   *   The container to pull out services used in the plugin.
+   * @var \GuzzleHttp\ClientInterface
+   */
+  protected $httpClient;
+
+  /**
+   * Constructs an instance of the plugin.
+   *
    * @param array $configuration
    *   A configuration array containing information about the plugin instance.
    * @param string $plugin_id
-   *   The plugin ID for the plugin instance.
+   *   The plugin_id for the plugin instance.
    * @param mixed $plugin_definition
    *   The plugin implementation definition.
-   *
-   * @return static
-   *   Returns an instance of this plugin.
+   * @param \GuzzleHttp\ClientInterface $http_client
+   *   The HTTP client.
    */
 
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, ClientInterface $http_client) {
+    parent::__construct($configuration, $plugin_id, $plugin_definition);
+    $this->httpClient = $http_client;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
     return new static(
       $configuration,
       $plugin_id,
-      $plugin_definition
+      $plugin_definition,
+      $container->get('http_client')
     );
   }
 
@@ -126,44 +140,53 @@ class Mobilyws extends SmsGatewayPluginBase implements ContainerFactoryPluginInt
     // Send SMS API with lang=3, default parameters:
     // http://www.mobily.ws/api/msgSend.php?mobile=966555555555&password=123456&numbers=966555555555&sender=NEW%20SMS&msg=Hello20%World&applicationType=68&lang=3
 
-    $client = \Drupal::httpClient();
-
     $result = new SmsMessageResult();
     $report = new SmsDeliveryReport();
 
-    $url = 'http://mobily.ws/api/msgSend.php?';
+    $uri = 'http://mobily.ws/api/msgSend.php?';
 
-    $parameters['form_params'] = [
+    $options['form_params'] = [
       'mobile'           => $this->configuration['mobilyws_user'],
       'password'         => $this->configuration['mobilyws_password'],
       'numbers'          => $sms_message->getRecipients()[0],
       'sender'           => $this->configuration['mobilyws_sender_id'],
       'msg'              => $sms_message->getMessage(),
-      'application_type' => '68',
-      'lang'             => '3'
+      'lang'             => '3',
+      'application_type' => '68'
+      //'domainName'       => \Drupal::request()->getHost()
     ];
 
     try {
-      $response = $client->request('post', $url, $parameters);
-      $status   = $response->getStatusCode();
-      if ($status == 200) {
-        return $result->addReport($report
-          ->setRecipient($sms_message->getRecipients()[0])
-          ->setStatus(SmsMessageReportStatus::QUEUED)
-        );
+      $response = $this->httpClient->request('post', $uri, $options);
+    }
+    catch (RequestException $e) {
+      $report->setStatus(SmsMessageReportStatus::ERROR);
+      $report->setStatusMessage($e->getMessage());
+      return $result
+        ->addReport($report)
+        ->setError(SmsMessageResultStatus::ERROR)
+        ->setErrorMessage('The request failed for some reason.');
+    }
+
+    $status = $response->getStatusCode();
+    if ($status == 200) {
+      // Returned successful response, parsing it
+      $resp = $response->getBody();
+
+      // Check if the sms delivery request was successful
+      if ($resp == 1) {
+        $report->setStatus(SmsMessageReportStatus::QUEUED);
       }
       else {
-        return $result
-          ->addReport($report
-            ->setRecipient($sms_message->getRecipients()[0])
-            ->setStatus(SmsMessageResultStatus::ERROR)
-          )
-          ->setErrorMessage($response->getBody());
-      }
-      } catch (HttpException $e) {
-        return $result
-          ->setError(SmsMessageResultStatus::ERROR)
-          ->setErrorMessage($e->getMessage());
+        $report->setStatus(SmsMessageReportStatus::ERROR);
+        $report->setStatusMessage('Sending message failed with error code: ' . $resp);
       }
     }
+
+    $report->setRecipient($sms_message->getRecipients()[0]);
+
+    $result->addReport($report);
+
+    return $result;
+  }
 }
