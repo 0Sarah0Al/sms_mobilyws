@@ -171,10 +171,10 @@ class Mobilyws extends SmsGatewayPluginBase implements ContainerFactoryPluginInt
     $status = $response->getStatusCode();
     if ($status == 200) {
       // Returned successful response, parsing it
-      $resp = $response->getBody();
+      $resp = $response->getBody()->__toString();
 
       // Check if the sms delivery request was successful
-      if ($resp == 1) {
+      if ($resp == '1') {
         $report->setStatus(SmsMessageReportStatus::QUEUED);
       }
       else {
